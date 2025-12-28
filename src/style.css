@@ -9,8 +9,30 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  background: #0a0a12;
 }
 
 canvas {
   display: block;
+}
+
+/* Tweakpane custom styling */
+:root {
+  --tp-base-background-color: hsla(230, 20%, 11%, 0.9);
+  --tp-base-shadow-color: hsla(0, 0%, 0%, 0.3);
+  --tp-button-background-color: hsla(230, 20%, 20%, 1);
+  --tp-button-background-color-active: hsla(230, 20%, 30%, 1);
+  --tp-button-background-color-focus: hsla(230, 20%, 25%, 1);
+  --tp-button-background-color-hover: hsla(230, 20%, 25%, 1);
+  --tp-button-foreground-color: hsla(0, 0%, 100%, 0.8);
+  --tp-container-background-color: hsla(230, 20%, 15%, 0.8);
+  --tp-container-background-color-active: hsla(230, 20%, 18%, 1);
+  --tp-container-background-color-focus: hsla(230, 20%, 18%, 1);
+  --tp-container-background-color-hover: hsla(230, 20%, 18%, 1);
+  --tp-groove-foreground-color: hsla(230, 20%, 35%, 1);
+  --tp-input-background-color: hsla(230, 20%, 18%, 1);
+  --tp-input-background-color-active: hsla(230, 20%, 22%, 1);
+  --tp-input-background-color-focus: hsla(230, 20%, 22%, 1);
+  --tp-input-background-color-hover: hsla(230, 20%, 20%, 1);
+  --tp-label-foreground-color: hsla(230, 20%, 75%, 1);
 }

@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@tweakpane/core": "^2.0.5",
     "@types/three": "^0.182.0",
     "prettier": "^3.7.4",
     "typescript": "~5.9.3",
@@ -16,6 +17,8 @@
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.19.3",
-    "three": "^0.182.0"
+    "postprocessing": "^6.38.2",
+    "three": "^0.182.0",
+    "tweakpane": "^4.0.5"
   }
 }

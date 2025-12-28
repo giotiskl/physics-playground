@@ -6,94 +6,130 @@ import { createPaddle } from '../../objects/Paddle';
 import { PALETTES, randomFromPalette } from '../../utils/colors';
 import { randomRange } from '../../utils/math';
 import { getMouseWorldPosition } from '../../utils/raycaster';
+import { createControls } from '../../ui/Controls';
+import { createStats } from '../../ui/Stats';
+import type { PhysicsBody } from '../../core/types';
 
 export async function initBallPit() {
   const engine = new Engine();
   await engine.initPhysics();
 
-  // Create ground
-  createGround(engine.scene, engine.world);
+  // Stats
+  const stats = createStats();
 
-  // Create walls to contain balls
+  // Create ground with better material
+  createGround(engine.scene, engine.world, {
+    size: 20,
+    color: 0x12121a,
+  });
+
+  // Create walls
   createWalls(engine);
 
-  // Spawn balls
-  const BALL_COUNT = 80;
+  // Ball storage for reset
+  let balls: PhysicsBody[] = [];
 
-  for (let i = 0; i < BALL_COUNT; i++) {
-    const ball = createBall(engine.world, {
-      radius: randomRange(0.3, 0.6),
-      position: {
-        x: randomRange(-6, 6),
-        y: randomRange(5, 15),
-        z: randomRange(-6, 6),
+  const { values: controlValues } = createControls(
+    {
+      ballCount: 80,
+      gravity: -9.81,
+      bounciness: 0.7,
+      paddleSize: 2.5,
+      bloomIntensity: 0.5,
+      showStats: true,
+    },
+    {
+      onReset: () => resetBalls(),
+      onAddBalls: () => spawnBalls(10),
+      onGravityChange: (value) => {
+        engine.setGravity(value);
       },
-      color: randomFromPalette(PALETTES.candy),
-      restitution: randomRange(0.5, 0.9),
-    });
+    },
+  );
 
-    engine.addPhysicsBody(ball);
-  }
+  // Spawn balls function (now controlValues exists)
+  const spawnBalls = (count: number) => {
+    for (let i = 0; i < count; i++) {
+      const ball = createBall(engine.world, {
+        radius: randomRange(0.35, 0.55),
+        position: {
+          x: randomRange(-5, 5),
+          y: randomRange(8, 18),
+          z: randomRange(-5, 5),
+        },
+        color: randomFromPalette(PALETTES.candy),
+        restitution: controlValues.bounciness,
+      });
+
+      engine.addPhysicsBody(ball);
+      balls.push(ball);
+    }
+  };
+
+  // Reset balls function
+  const resetBalls = () => {
+    for (const ball of balls) {
+      engine.removePhysicsBody(ball);
+    }
+    balls = [];
+    spawnBalls(80);
+  };
+
+  // Initial spawn (now safe to call)
+  spawnBalls(80);
 
   // Create paddle
   const paddle = createPaddle(engine.world, {
     size: { x: 2.5, y: 0.6, z: 2.5 },
-    position: { x: 0, y: 1, z: 0 },
+    position: { x: 0, y: 1.5, z: 0 },
     color: 0xffffff,
   });
   engine.scene.add(paddle.mesh);
 
-  // Paddle height (follows mouse on horizontal plane at this Y)
+  // Paddle movement
   const PADDLE_HEIGHT = 1.5;
-
-  // Smoothed paddle position for fluid movement
   const targetPosition = new THREE.Vector3(0, PADDLE_HEIGHT, 0);
   const smoothedPosition = new THREE.Vector3(0, PADDLE_HEIGHT, 0);
-  const SMOOTHING = 0.15; // Lower = smoother, higher = snappier
+  const SMOOTHING = 0.12;
 
-  // Start engine with custom update
-  engine.start((_delta) => {
-    // Get mouse world position
+  // Start engine
+  engine.start(() => {
+    stats.update();
+
     const mouseWorld = getMouseWorldPosition(
       engine.input.mouseNormalized,
       engine.camera,
       PADDLE_HEIGHT,
     );
 
-    // Clamp to bounds
     targetPosition.set(
-      THREE.MathUtils.clamp(mouseWorld.x, -7, 7),
+      THREE.MathUtils.clamp(mouseWorld.x, -6, 6),
       PADDLE_HEIGHT,
-      THREE.MathUtils.clamp(mouseWorld.z, -7, 7),
+      THREE.MathUtils.clamp(mouseWorld.z, -6, 6),
     );
 
-    // Smooth interpolation
     smoothedPosition.lerp(targetPosition, SMOOTHING);
 
-    // Update kinematic body position
     paddle.rigidBody.setNextKinematicTranslation({
       x: smoothedPosition.x,
       y: smoothedPosition.y,
       z: smoothedPosition.z,
     });
 
-    // Sync mesh to physics body
     const pos = paddle.rigidBody.translation();
     paddle.mesh.position.set(pos.x, pos.y, pos.z);
   });
 
-  console.log('🎱 Ball Pit initialized with paddle control!');
+  console.log('🎱 Ball Pit initialized with controls!');
 
   return engine;
 }
 
-// Helper to create invisible walls
 function createWalls(engine: Engine) {
   const wallThickness = 0.5;
-  const wallHeight = 10;
+  const wallHeight = 12;
   const arenaSize = 8;
 
-  // Import RAPIER dynamically since it's async
   import('@dimforge/rapier3d-compat').then((RAPIER) => {
     const walls = [
       {
@@ -131,11 +167,9 @@ function createWalls(engine: Engine) {
     ];
 
     for (const wall of walls) {
-      const desc = RAPIER.ColliderDesc.cuboid(
-        wall.sx,
-        wall.sy,
-        wall.sz,
-      ).setTranslation(wall.x, wall.y, wall.z);
+      const desc = RAPIER.ColliderDesc.cuboid(wall.sx, wall.sy, wall.sz)
+        .setTranslation(wall.x, wall.y, wall.z)
+        .setRestitution(0.3);
       engine.world.createCollider(desc);
     }
   });

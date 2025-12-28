@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
+import { EffectComposer } from 'postprocessing';
 import { Input } from './Input';
+import { createPostProcessing } from './PostProcessing';
 import type { EngineConfig, PhysicsBody } from './types';
 
 export class Engine {
@@ -13,11 +15,12 @@ export class Engine {
 
   private clock = new THREE.Clock();
   private isRunning = false;
+  private composer!: EffectComposer;
 
   constructor(config: EngineConfig = {}) {
     // Scene
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x1a1a2e);
+    this.scene.background = new THREE.Color(0x0a0a12);
 
     // Camera
     this.camera = new THREE.PerspectiveCamera(
@@ -26,25 +29,35 @@ export class Engine {
       0.1,
       1000,
     );
-    this.camera.position.set(0, 12, 20);
+    this.camera.position.set(0, 14, 22);
     this.camera.lookAt(0, 0, 0);
 
     // Renderer
     this.renderer = new THREE.WebGLRenderer({
-      antialias: true,
+      antialias: false, // We use SMAA instead
+      powerPreference: 'high-performance',
       canvas: config.canvas,
     });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-    // Input
-    this.input = new Input(this.renderer.domElement);
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.2;
 
     if (!config.canvas) {
       document.body.appendChild(this.renderer.domElement);
     }
+
+    // Input
+    this.input = new Input(this.renderer.domElement);
+
+    // Post-processing
+    this.composer = createPostProcessing(
+      this.renderer,
+      this.scene,
+      this.camera,
+    );
 
     this.setupLighting();
     this.setupResizeHandler();
@@ -56,21 +69,33 @@ export class Engine {
   }
 
   private setupLighting() {
-    const ambient = new THREE.AmbientLight(0xffffff, 0.5);
+    // Ambient light (soft fill)
+    const ambient = new THREE.AmbientLight(0x404060, 0.4);
     this.scene.add(ambient);
 
-    const directional = new THREE.DirectionalLight(0xffffff, 1);
-    directional.position.set(10, 20, 10);
-    directional.castShadow = true;
-    directional.shadow.mapSize.width = 2048;
-    directional.shadow.mapSize.height = 2048;
-    directional.shadow.camera.near = 0.5;
-    directional.shadow.camera.far = 50;
-    directional.shadow.camera.left = -20;
-    directional.shadow.camera.right = 20;
-    directional.shadow.camera.top = 20;
-    directional.shadow.camera.bottom = -20;
-    this.scene.add(directional);
+    // Main directional light
+    const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    mainLight.position.set(10, 20, 10);
+    mainLight.castShadow = true;
+    mainLight.shadow.mapSize.width = 2048;
+    mainLight.shadow.mapSize.height = 2048;
+    mainLight.shadow.camera.near = 0.5;
+    mainLight.shadow.camera.far = 60;
+    mainLight.shadow.camera.left = -20;
+    mainLight.shadow.camera.right = 20;
+    mainLight.shadow.camera.top = 20;
+    mainLight.shadow.camera.bottom = -20;
+    mainLight.shadow.bias = -0.0001;
+    this.scene.add(mainLight);
+
+    // Rim light (back light for depth)
+    const rimLight = new THREE.DirectionalLight(0x4488ff, 0.5);
+    rimLight.position.set(-10, 10, -10);
+    this.scene.add(rimLight);
+
+    // Ground bounce light
+    const bounceLight = new THREE.HemisphereLight(0x303050, 0x101020, 0.3);
+    this.scene.add(bounceLight);
   }
 
   private setupResizeHandler() {
@@ -78,6 +103,7 @@ export class Engine {
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.composer.setSize(window.innerWidth, window.innerHeight);
     });
   }
 
@@ -102,6 +128,10 @@ export class Engine {
     }
   }
 
+  setGravity(y: number) {
+    this.world.gravity = { x: 0, y, z: 0 };
+  }
+
   start(onUpdate?: (delta: number) => void) {
     this.isRunning = true;
 
@@ -118,7 +148,8 @@ export class Engine {
       // Custom update callback
       onUpdate?.(delta);
 
-      this.renderer.render(this.scene, this.camera);
+      // Render with post-processing
+      this.composer.render(delta);
     };
 
     animate();
@@ -130,8 +161,9 @@ export class Engine {
 
   dispose() {
     this.stop();
-    this.renderer.dispose();
     this.input.dispose();
+    this.composer.dispose();
+    this.renderer.dispose();
     this.physicsBodies = [];
   }
 }
