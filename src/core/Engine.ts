@@ -6,6 +6,18 @@ import { createPostProcessing } from './PostProcessing';
 import { createGradientSky } from '../objects/Sky';
 import type { EngineConfig, PhysicsBody } from './types';
 
+/**
+ * Engine.ts
+ *
+ * Core orchestrator for Physics Playground.
+ * Manages Three.js scene, Rapier physics world, rendering pipeline,
+ * and the game loop. Handles post-processing with bloom effects.
+ *
+ * @example
+ * const engine = new Engine();
+ * await engine.initPhysics();
+ * engine.start((delta) => { ... });
+ */
 export class Engine {
   public scene: THREE.Scene;
   public camera: THREE.PerspectiveCamera;

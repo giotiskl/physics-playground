@@ -2,6 +2,13 @@ import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
 import type { PhysicsBody } from '../core/types';
 
+/**
+ * Ball.ts
+ *
+ * Creates a physics-enabled sphere with Three.js mesh and Rapier rigid body.
+ * Supports customizable radius, color, position, and bounciness.
+ */
+
 export interface BallOptions {
   radius?: number;
   position?: { x: number; y: number; z: number };

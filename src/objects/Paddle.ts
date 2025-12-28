@@ -2,6 +2,13 @@ import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
 import type { PhysicsBody } from '../core/types';
 
+/**
+ * Paddle.ts
+ *
+ * Creates a kinematic box that can be moved via code (mouse control).
+ * Used as the player-controlled object that scatters balls.
+ */
+
 export interface PaddleOptions {
   size?: { x: number; y: number; z: number };
   position?: { x: number; y: number; z: number };

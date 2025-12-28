@@ -10,6 +10,21 @@ import { createControls } from '../../ui/Controls';
 import { createStats } from '../../ui/Stats';
 import type { PhysicsBody } from '../../core/types';
 
+/**
+ * BallPit.ts
+ *
+ * Ball Pit Chaos - Example #1
+ *
+ * An interactive physics demo where colorful balls scatter
+ * as you move a paddle around with your mouse.
+ *
+ * Features:
+ * - Dynamic ball count (10-500)
+ * - Adjustable gravity and bounciness
+ * - Bloom post-processing
+ * - Real-time Tweakpane controls
+ */
+
 export async function initBallPit() {
   const engine = new Engine();
   await engine.initPhysics();
