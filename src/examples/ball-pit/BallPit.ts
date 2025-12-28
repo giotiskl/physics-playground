@@ -35,7 +35,7 @@ export async function initBallPit() {
       gravity: -9.81,
       bounciness: 0.7,
       paddleSize: 2.5,
-      bloomIntensity: 0.5,
+      bloomIntensity: 1.0, // Start with visible bloom
       showStats: true,
     },
     {
@@ -43,6 +43,9 @@ export async function initBallPit() {
       onAddBalls: () => spawnBalls(10),
       onGravityChange: (value) => {
         engine.setGravity(value);
+      },
+      onBloomChange: (value) => {
+        engine.setBloomIntensity(value);
       },
     },
   );

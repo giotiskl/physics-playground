@@ -26,8 +26,10 @@ export function createBall(
   const geometry = new THREE.SphereGeometry(radius, 32, 32);
   const material = new THREE.MeshStandardMaterial({
     color,
-    roughness: 0.4,
+    roughness: 0.35,
     metalness: 0.1,
+    emissive: color,
+    emissiveIntensity: 0.15,
   });
   const mesh = new THREE.Mesh(geometry, material);
   mesh.castShadow = true;

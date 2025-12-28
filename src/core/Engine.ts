@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
-import { EffectComposer } from 'postprocessing';
+import { EffectComposer, BloomEffect } from 'postprocessing';
 import { Input } from './Input';
 import { createPostProcessing } from './PostProcessing';
+import { createGradientSky } from '../objects/Sky';
 import type { EngineConfig, PhysicsBody } from './types';
 
 export class Engine {
@@ -12,15 +13,15 @@ export class Engine {
   public world!: RAPIER.World;
   public physicsBodies: PhysicsBody[] = [];
   public input: Input;
+  public bloomEffect!: BloomEffect;
 
   private clock = new THREE.Clock();
   private isRunning = false;
   private composer!: EffectComposer;
 
   constructor(config: EngineConfig = {}) {
-    // Scene
+    // Scene (no background color - sky will handle it)
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x0a0a12);
 
     // Camera
     this.camera = new THREE.PerspectiveCamera(
@@ -34,7 +35,7 @@ export class Engine {
 
     // Renderer
     this.renderer = new THREE.WebGLRenderer({
-      antialias: false, // We use SMAA instead
+      antialias: false,
       powerPreference: 'high-performance',
       canvas: config.canvas,
     });
@@ -52,12 +53,17 @@ export class Engine {
     // Input
     this.input = new Input(this.renderer.domElement);
 
+    // Sky
+    createGradientSky(this.scene);
+
     // Post-processing
-    this.composer = createPostProcessing(
+    const { composer, bloomEffect } = createPostProcessing(
       this.renderer,
       this.scene,
       this.camera,
     );
+    this.composer = composer;
+    this.bloomEffect = bloomEffect;
 
     this.setupLighting();
     this.setupResizeHandler();
@@ -69,8 +75,8 @@ export class Engine {
   }
 
   private setupLighting() {
-    // Ambient light (soft fill)
-    const ambient = new THREE.AmbientLight(0x404060, 0.4);
+    // Ambient light
+    const ambient = new THREE.AmbientLight(0x6688cc, 0.4);
     this.scene.add(ambient);
 
     // Main directional light
@@ -88,14 +94,14 @@ export class Engine {
     mainLight.shadow.bias = -0.0001;
     this.scene.add(mainLight);
 
-    // Rim light (back light for depth)
-    const rimLight = new THREE.DirectionalLight(0x4488ff, 0.5);
+    // Rim light
+    const rimLight = new THREE.DirectionalLight(0x4488ff, 0.6);
     rimLight.position.set(-10, 10, -10);
     this.scene.add(rimLight);
 
-    // Ground bounce light
-    const bounceLight = new THREE.HemisphereLight(0x303050, 0x101020, 0.3);
-    this.scene.add(bounceLight);
+    // Hemisphere light for sky/ground color bleed
+    const hemiLight = new THREE.HemisphereLight(0x6688cc, 0x223344, 0.5);
+    this.scene.add(hemiLight);
   }
 
   private setupResizeHandler() {
@@ -105,6 +111,10 @@ export class Engine {
       this.renderer.setSize(window.innerWidth, window.innerHeight);
       this.composer.setSize(window.innerWidth, window.innerHeight);
     });
+  }
+
+  setBloomIntensity(intensity: number) {
+    this.bloomEffect.intensity = intensity;
   }
 
   addPhysicsBody(body: PhysicsBody) {
@@ -141,14 +151,11 @@ export class Engine {
 
       const delta = this.clock.getDelta();
 
-      // Step physics
       this.world.step();
       this.syncPhysics();
 
-      // Custom update callback
       onUpdate?.(delta);
 
-      // Render with post-processing
       this.composer.render(delta);
     };
 
