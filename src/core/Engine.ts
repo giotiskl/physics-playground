@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
+import { Input } from './Input';
 import type { EngineConfig, PhysicsBody } from './types';
 
 export class Engine {
@@ -8,6 +9,7 @@ export class Engine {
   public renderer: THREE.WebGLRenderer;
   public world!: RAPIER.World;
   public physicsBodies: PhysicsBody[] = [];
+  public input: Input;
 
   private clock = new THREE.Clock();
   private isRunning = false;
@@ -36,6 +38,9 @@ export class Engine {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    // Input
+    this.input = new Input(this.renderer.domElement);
 
     if (!config.canvas) {
       document.body.appendChild(this.renderer.domElement);
@@ -126,6 +131,7 @@ export class Engine {
   dispose() {
     this.stop();
     this.renderer.dispose();
+    this.input.dispose();
     this.physicsBodies = [];
   }
 }
