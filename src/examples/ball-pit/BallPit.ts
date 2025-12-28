@@ -35,17 +35,19 @@ export async function initBallPit() {
       gravity: -9.81,
       bounciness: 0.7,
       paddleSize: 2.5,
-      bloomIntensity: 1.0, // Start with visible bloom
+      bloomIntensity: 1.0,
       showStats: true,
     },
     {
       onReset: () => resetBalls(),
-      onAddBalls: () => spawnBalls(10),
       onGravityChange: (value) => {
         engine.setGravity(value);
       },
       onBloomChange: (value) => {
         engine.setBloomIntensity(value);
+      },
+      onBallCountChange: (value) => {
+        syncBallCount(value);
       },
     },
   );
@@ -69,13 +71,46 @@ export async function initBallPit() {
     }
   };
 
+  // Sync ball count to target (add or remove)
+  const syncBallCount = (targetCount: number) => {
+    const currentCount = balls.length;
+
+    if (targetCount > currentCount) {
+      // Add balls
+      const toAdd = targetCount - currentCount;
+      for (let i = 0; i < toAdd; i++) {
+        const ball = createBall(engine.world, {
+          radius: randomRange(0.35, 0.55),
+          position: {
+            x: randomRange(-5, 5),
+            y: randomRange(10, 15), // Drop from above
+            z: randomRange(-5, 5),
+          },
+          color: randomFromPalette(PALETTES.candy),
+          restitution: controlValues.bounciness,
+        });
+        engine.addPhysicsBody(ball);
+        balls.push(ball);
+      }
+    } else if (targetCount < currentCount) {
+      // Remove balls (from the end)
+      const toRemove = currentCount - targetCount;
+      for (let i = 0; i < toRemove; i++) {
+        const ball = balls.pop();
+        if (ball) {
+          engine.removePhysicsBody(ball);
+        }
+      }
+    }
+  };
+
   // Reset balls function
   const resetBalls = () => {
     for (const ball of balls) {
       engine.removePhysicsBody(ball);
     }
     balls = [];
-    spawnBalls(80);
+    spawnBalls(controlValues.ballCount); // Use configured count
   };
 
   // Initial spawn (now safe to call)

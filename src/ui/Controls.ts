@@ -11,9 +11,9 @@ export interface ControlValues {
 
 export interface ControlCallbacks {
   onReset?: () => void;
-  onAddBalls?: () => void;
   onGravityChange?: (value: number) => void;
   onBloomChange?: (value: number) => void;
+  onBallCountChange?: (value: number) => void;
 }
 
 export function createControls(
@@ -80,12 +80,20 @@ export function createControls(
     expanded: true,
   });
 
+  // Ball count slider (reactive)
+  actionsFolder
+    .addBinding(values, 'ballCount', {
+      min: 10,
+      max: 500,
+      step: 10,
+      label: 'Ball Count',
+    })
+    .on('change', (ev: { value: number }) => {
+      callbacks.onBallCountChange?.(ev.value);
+    });
+
   actionsFolder.addButton({ title: '🔄 Reset Balls' }).on('click', () => {
     callbacks.onReset?.();
-  });
-
-  actionsFolder.addButton({ title: '➕ Add 10 Balls' }).on('click', () => {
-    callbacks.onAddBalls?.();
   });
 
   // Style the pane
