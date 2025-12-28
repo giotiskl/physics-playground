@@ -14,6 +14,7 @@ export interface ControlCallbacks {
   onGravityChange?: (value: number) => void;
   onBloomChange?: (value: number) => void;
   onBallCountChange?: (value: number) => void;
+  onPaddleSizeChange?: (value: number) => void;
 }
 
 export function createControls(
@@ -50,12 +51,16 @@ export function createControls(
     label: 'Bounciness',
   });
 
-  physicsFolder.addBinding(values, 'paddleSize', {
-    min: 1,
-    max: 5,
-    step: 0.25,
-    label: 'Paddle Size',
-  });
+  physicsFolder
+    .addBinding(values, 'paddleSize', {
+      min: 1,
+      max: 5,
+      step: 0.25,
+      label: 'Paddle Size',
+    })
+    .on('change', (ev: { value: number }) => {
+      callbacks.onPaddleSizeChange?.(ev.value);
+    });
 
   // Visuals folder
   const visualsFolder = pane.addFolder({

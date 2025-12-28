@@ -46,7 +46,7 @@ export async function initBallPit() {
 
   const { values: controlValues } = createControls(
     {
-      ballCount: 80,
+      ballCount: 200,
       gravity: -9.81,
       bounciness: 0.7,
       paddleSize: 2.5,
@@ -63,6 +63,9 @@ export async function initBallPit() {
       },
       onBallCountChange: (value) => {
         syncBallCount(value);
+      },
+      onPaddleSizeChange: (value) => {
+        updatePaddleSize(value);
       },
     },
   );
@@ -129,7 +132,7 @@ export async function initBallPit() {
   };
 
   // Initial spawn (now safe to call)
-  spawnBalls(80);
+  spawnBalls(200);
 
   // Create paddle
   const paddle = createPaddle(engine.world, {
@@ -138,6 +141,30 @@ export async function initBallPit() {
     color: 0xffffff,
   });
   engine.scene.add(paddle.mesh);
+
+  // Update paddle size dynamically
+  const updatePaddleSize = (size: number) => {
+    // Remove old paddle
+    engine.scene.remove(paddle.mesh);
+    engine.world.removeRigidBody(paddle.rigidBody);
+
+    // Create new paddle with updated size
+    const newPaddle = createPaddle(engine.world, {
+      size: { x: size, y: 0.6, z: size },
+      position: {
+        x: smoothedPosition.x,
+        y: smoothedPosition.y,
+        z: smoothedPosition.z,
+      },
+      color: 0xffffff,
+    });
+
+    // Replace paddle reference
+    paddle.mesh = newPaddle.mesh;
+    paddle.rigidBody = newPaddle.rigidBody;
+
+    engine.scene.add(paddle.mesh);
+  };
 
   // Paddle movement
   const PADDLE_HEIGHT = 1.5;
