@@ -10,13 +10,293 @@ body {
   height: 100%;
   overflow: hidden;
   background: #0a0a12;
+  font-family:
+    'Segoe UI',
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
 canvas {
   display: block;
 }
 
-/* Tweakpane custom styling */
+/* ============================================
+   LANDING PAGE
+   ============================================ */
+
+.landing-page {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 50%, #0d1b2a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.5s ease;
+}
+
+.landing-page.fade-out {
+  animation: fadeOut 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.landing-content {
+  max-width: 900px;
+  padding: 2rem;
+  text-align: center;
+}
+
+/* Header */
+.landing-header {
+  margin-bottom: 3rem;
+}
+
+.landing-title {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 0.5rem;
+}
+
+.title-physics,
+.title-playground {
+  display: block;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  padding-bottom: 0.75rem;
+}
+
+.title-physics {
+  background: linear-gradient(135deg, #ff6b6b, #feca57);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 4px 8px rgba(255, 107, 107, 0.3));
+}
+
+.title-playground {
+  background: linear-gradient(135deg, #4ecdc4, #44a3f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 4px 8px rgba(78, 205, 196, 0.3));
+}
+
+.landing-subtitle {
+  font-size: 1rem;
+  color: #8892a6;
+  margin-bottom: 1rem;
+}
+
+.landing-subtitle a {
+  color: #4ecdc4;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.landing-subtitle a:hover {
+  color: #6ee7de;
+}
+
+.landing-tagline {
+  font-size: 1.2rem;
+  color: #b8c1d1;
+  line-height: 1.6;
+}
+
+/* Examples Grid */
+.examples-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.example-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.example-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--card-color);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.example-card:hover:not(:disabled) {
+  transform: translateY(-8px) scale(1.02);
+  border-color: var(--card-color);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 0 60px color-mix(in srgb, var(--card-color) 30%, transparent);
+}
+
+.example-card:hover:not(:disabled)::before {
+  opacity: 0.08;
+}
+
+.example-card:active:not(:disabled) {
+  transform: translateY(-4px) scale(1.01);
+}
+
+.card-emoji {
+  font-size: 3.5rem;
+  display: block;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s;
+}
+
+.example-card:hover .card-emoji {
+  transform: scale(1.2) rotate(-5deg);
+}
+
+.card-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.card-description {
+  font-size: 0.9rem;
+  color: #8892a6;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.card-cta {
+  display: inline-block;
+  padding: 0.5rem 1.2rem;
+  background: var(--card-color);
+  color: #0d1b2a;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: 50px;
+  position: relative;
+  z-index: 1;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.example-card:hover .card-cta {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px color-mix(in srgb, var(--card-color) 50%, transparent);
+}
+
+/* Coming Soon */
+.example-card.coming-soon {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.example-card.coming-soon:hover {
+  transform: none;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+.card-badge {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: #8892a6;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 50px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Footer */
+.landing-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: #5a6578;
+}
+
+.landing-footer a {
+  color: #8892a6;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.landing-footer a:hover {
+  color: #4ecdc4;
+}
+
+/* ============================================
+   BACK BUTTON (in examples)
+   ============================================ */
+
+.back-button {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1000;
+  background: rgba(13, 27, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  backdrop-filter: blur(10px);
+}
+
+.back-button:hover {
+  background: rgba(78, 205, 196, 0.2);
+  border-color: #4ecdc4;
+}
+
+/* ============================================
+   TWEAKPANE OVERRIDES
+   ============================================ */
+
+.tp-btnv_b,
+.tp-btnv_t {
+  color: #fff !important;
+}
+
 :root {
   --tp-base-background-color: hsla(230, 20%, 11%, 0.9);
   --tp-base-shadow-color: hsla(0, 0%, 0%, 0.3);
