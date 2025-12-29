@@ -38,8 +38,7 @@ export function createDominoControls(
       label: 'Pattern',
       options: {
         Line: 'line',
-        Curve: 'curve',
-        Spiral: 'spiral',
+        Circle: 'circle',
         Split: 'split',
       },
     })

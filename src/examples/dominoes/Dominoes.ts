@@ -154,11 +154,8 @@ export async function initDominoes() {
       case 'line':
         engine.camera.position.set(0, 10, 18);
         break;
-      case 'curve':
-        engine.camera.position.set(0, 14, 14);
-        break;
-      case 'spiral':
-        engine.camera.position.set(0, 18, 12);
+      case 'circle':
+        engine.camera.position.set(0, 16, 8);
         break;
       case 'split':
         engine.camera.position.set(0, 12, 16);

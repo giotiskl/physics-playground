@@ -35,42 +35,18 @@ export function lineLayout(count: number): DominoPosition[] {
 }
 
 /**
- * Curved arc of dominoes
+ * Circle of dominoes
  */
-export function curveLayout(count: number): DominoPosition[] {
+export function circleLayout(count: number): DominoPosition[] {
   const positions: DominoPosition[] = [];
-  const radius = 5;
-  const arcAngle = Math.PI * 0.8; // 144 degrees
-  const startAngle = -arcAngle / 2;
+  const radius = 4;
 
   for (let i = 0; i < count; i++) {
-    const angle = startAngle + (i / (count - 1)) * arcAngle;
-    positions.push({
-      x: Math.sin(angle) * radius,
-      z: Math.cos(angle) * radius - radius,
-      rotation: -angle, // Face along the curve
-    });
-  }
-
-  return positions;
-}
-
-/**
- * Spiral pattern
- */
-export function spiralLayout(count: number): DominoPosition[] {
-  const positions: DominoPosition[] = [];
-  const startRadius = 1;
-  const growthRate = 0.15;
-  const angleStep = 0.35;
-
-  for (let i = 0; i < count; i++) {
-    const angle = i * angleStep;
-    const radius = startRadius + i * growthRate;
+    const angle = (i / count) * Math.PI * 2;
     positions.push({
       x: Math.cos(angle) * radius,
       z: Math.sin(angle) * radius,
-      rotation: angle + Math.PI / 2, // Face outward along spiral
+      rotation: -angle - Math.PI / 2, // Face tangent to circle, toward next domino
     });
   }
 
@@ -85,12 +61,12 @@ export function splitLayout(count: number): DominoPosition[] {
   const stemCount = Math.floor(count * 0.3);
   const branchCount = Math.floor((count - stemCount) / 2);
 
-  // Stem (straight line coming toward camera)
+  // Stem (straight line going in +Z direction)
   for (let i = 0; i < stemCount; i++) {
     positions.push({
       x: 0,
       z: -4 + i * SPACING,
-      rotation: Math.PI / 2, // Face sideways so they fall forward
+      rotation: -Math.PI / 2, // Face forward (+Z direction)
     });
   }
 
@@ -103,7 +79,7 @@ export function splitLayout(count: number): DominoPosition[] {
     positions.push({
       x: -Math.sin(splitAngle) * distance,
       z: splitZ + Math.cos(splitAngle) * distance,
-      rotation: Math.PI / 2 - splitAngle,
+      rotation: -Math.PI / 2 - splitAngle, // Face along left branch direction
     });
   }
 
@@ -113,7 +89,7 @@ export function splitLayout(count: number): DominoPosition[] {
     positions.push({
       x: Math.sin(splitAngle) * distance,
       z: splitZ + Math.cos(splitAngle) * distance,
-      rotation: Math.PI / 2 + splitAngle,
+      rotation: -Math.PI / 2 + splitAngle, // Face along right branch direction
     });
   }
 
@@ -123,8 +99,7 @@ export function splitLayout(count: number): DominoPosition[] {
 // Layout registry
 export const layouts = {
   line: lineLayout,
-  curve: curveLayout,
-  spiral: spiralLayout,
+  circle: circleLayout,
   split: splitLayout,
 };
 
