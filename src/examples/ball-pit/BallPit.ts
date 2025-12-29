@@ -6,7 +6,7 @@ import { createPaddle } from '../../objects/Paddle';
 import { PALETTES, randomFromPalette } from '../../utils/colors';
 import { randomRange } from '../../utils/math';
 import { getMouseWorldPosition } from '../../utils/raycaster';
-import { createControls } from '../../ui/Controls';
+import { createControls } from '../../ui/BallPitControls';
 import { createStats } from '../../ui/Stats';
 import type { PhysicsBody } from '../../core/types';
 

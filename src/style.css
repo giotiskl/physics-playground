@@ -316,3 +316,18 @@ canvas {
   --tp-input-background-color-hover: hsla(230, 20%, 20%, 1);
   --tp-label-foreground-color: hsla(230, 20%, 75%, 1);
 }
+
+/* ============================================
+   DOMINO HINT
+   ============================================ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
