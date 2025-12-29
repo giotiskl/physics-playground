@@ -29,7 +29,7 @@ const examples: Example[] = [
     emoji: '🁡',
     description: 'Knock them down and watch the chain reaction unfold.',
     color: '#4ecdc4',
-    available: false, // Coming soon
+    available: true,
   },
   {
     id: 'soft-body',
