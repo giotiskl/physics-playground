@@ -10,12 +10,14 @@ import type { LayoutType } from '../examples/dominoes/layouts';
 export interface DominoControlValues {
   dominoCount: number;
   layout: LayoutType;
+  slowMotion: boolean;
 }
 
 export interface DominoControlCallbacks {
   onReset?: () => void;
   onLayoutChange?: (layout: LayoutType) => void;
   onCountChange?: (count: number) => void;
+  onSlowMotionChange?: (enabled: boolean) => void;
 }
 
 export function createDominoControls(
@@ -54,6 +56,17 @@ export function createDominoControls(
     })
     .on('change', (ev: { value: number }) => {
       callbacks.onCountChange?.(ev.value);
+    });
+
+  // Effects folder
+  const effectsFolder = pane.addFolder({ title: 'Effects', expanded: true });
+
+  effectsFolder
+    .addBinding(values, 'slowMotion', {
+      label: 'Slow Motion',
+    })
+    .on('change', (ev: { value: boolean }) => {
+      callbacks.onSlowMotionChange?.(ev.value);
     });
 
   // Actions folder

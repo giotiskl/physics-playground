@@ -133,18 +133,43 @@ export async function initDominoes() {
     {
       dominoCount: DEFAULT_COUNT,
       layout: DEFAULT_LAYOUT,
+      slowMotion: false,
     },
     {
       onReset: () =>
         spawnDominoes(controlValues.layout, controlValues.dominoCount),
-      onLayoutChange: (layout) =>
-        spawnDominoes(layout, controlValues.dominoCount),
+      onLayoutChange: (layout) => {
+        spawnDominoes(layout, controlValues.dominoCount);
+        adjustCameraForLayout(layout);
+      },
       onCountChange: (count) => spawnDominoes(controlValues.layout, count),
+      onSlowMotionChange: (enabled) => {
+        engine.setPhysicsTimeScale(enabled ? 0.3 : 1.0);
+      },
     },
   );
 
+  const adjustCameraForLayout = (layout: LayoutType) => {
+    switch (layout) {
+      case 'line':
+        engine.camera.position.set(0, 10, 18);
+        break;
+      case 'curve':
+        engine.camera.position.set(0, 14, 14);
+        break;
+      case 'spiral':
+        engine.camera.position.set(0, 18, 12);
+        break;
+      case 'split':
+        engine.camera.position.set(0, 12, 16);
+        break;
+    }
+    engine.camera.lookAt(0, 0, 0);
+  };
+
   // Initial spawn
   spawnDominoes(DEFAULT_LAYOUT, DEFAULT_COUNT);
+  adjustCameraForLayout(DEFAULT_LAYOUT);
 
   // Hint text
   const hint = document.createElement('div');

@@ -27,6 +27,7 @@ export class Engine {
   public input: Input;
   public bloomEffect!: BloomEffect;
 
+  private physicsTimeScale = 1.0;
   private clock = new THREE.Clock();
   private isRunning = false;
   private composer!: EffectComposer;
@@ -154,6 +155,10 @@ export class Engine {
     this.world.gravity = { x: 0, y, z: 0 };
   }
 
+  setPhysicsTimeScale(scale: number) {
+    this.physicsTimeScale = scale;
+  }
+
   start(onUpdate?: (delta: number) => void) {
     this.isRunning = true;
 
@@ -163,6 +168,7 @@ export class Engine {
 
       const delta = this.clock.getDelta();
 
+      this.world.timestep = (1 / 60) * this.physicsTimeScale;
       this.world.step();
       this.syncPhysics();
 
