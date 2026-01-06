@@ -21,7 +21,7 @@ const DEFAULT_LAYOUT: LayoutType = 'line';
 const PLACEMENT_SPACING = 0.55;
 const TOUCH_HOLD_DURATION = 1000; // 1 second hold to enter placement mode
 const MIN_ZOOM = 8;
-const MAX_ZOOM = 30;
+const MAX_ZOOM = 50;
 
 export async function initDominoes() {
   const engine = new Engine();
