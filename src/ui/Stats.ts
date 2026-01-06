@@ -1,4 +1,13 @@
-export function createStats(): { dom: HTMLElement; update: () => void } {
+export interface StatsOptions {
+  showOnMobile?: boolean;
+}
+
+export function createStats(
+  options: StatsOptions = {},
+): { dom: HTMLElement; update: () => void } {
+  const { showOnMobile = true } = options;
+  const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
   const container = document.createElement('div');
   container.style.cssText = `
     position: fixed;
@@ -11,6 +20,7 @@ export function createStats(): { dom: HTMLElement; update: () => void } {
     font-family: 'SF Mono', 'Fira Code', monospace;
     font-size: 12px;
     z-index: 1000;
+    display: ${isMobile && !showOnMobile ? 'none' : 'block'};
   `;
 
   let frames = 0;
