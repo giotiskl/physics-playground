@@ -12,13 +12,13 @@ A collection of interactive physics simulations built with **Three.js**, **Rapie
 
 ## 🎮 Examples
 
-| #   | Example          | Description                                         | Status         |
-| --- | ---------------- | --------------------------------------------------- | -------------- |
-| 1   | Ball Pit Chaos   | Interactive balls that scatter as you move a paddle | 🚧 In Progress |
-| 2   | Domino Chain     | Trigger satisfying chain reactions                  | 📋 Planned     |
-| 3   | Soft Body Jelly  | Squishy, mesmerizing physics                        | 📋 Planned     |
-| 4   | Cloth Simulation | Fabric reacting to wind                             | 📋 Planned     |
-| 5   | Ragdoll Physics  | Hilarious tumbling characters                       | 📋 Planned     |
+| #   | Example          | Description                                         | Status     |
+| --- | ---------------- | --------------------------------------------------- | ---------- |
+| 1   | Ball Pit Chaos   | Interactive balls that scatter as you move a paddle | ✅ Done    |
+| 2   | Domino Chain     | Trigger satisfying chain reactions                  | ✅ Done    |
+| 3   | Soft Body Jelly  | Squishy, mesmerizing physics                        | 📋 Planned |
+| 4   | Cloth Simulation | Fabric reacting to wind                             | 📋 Planned |
+| 5   | Ragdoll Physics  | Hilarious tumbling characters                       | 📋 Planned |
 
 ## 🛠️ Tech Stack
 
