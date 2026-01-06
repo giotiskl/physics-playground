@@ -40,6 +40,7 @@ export function createDominoControls(
         Line: 'line',
         Circle: 'circle',
         Split: 'split',
+        Empty: 'empty',
       },
     })
     .on('change', (ev: { value: LayoutType }) => {

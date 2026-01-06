@@ -139,13 +139,13 @@ export async function initDominoes() {
     const color = getGradientColor(dominoes.length, dominoes.length + 20, startColor, endColor);
 
     // Calculate rotation so domino's flat face is perpendicular to the path
-    // (so dominoes can knock each other over)
+    // and facing backward (so force is applied correctly for chain reaction)
     let rotation = 0;
     if (previousPosition) {
       rotation = Math.atan2(
         position.x - previousPosition.x,
         position.z - previousPosition.z,
-      ) + Math.PI / 2; // Add 90 degrees to orient flat face toward path
+      ) - Math.PI / 2; // Subtract 90 degrees to face the other way
     }
 
     const domino = createDomino(engine.world, {
@@ -292,6 +292,9 @@ export async function initDominoes() {
         break;
       case 'split':
         engine.camera.position.set(0, 12, 16);
+        break;
+      case 'empty':
+        engine.camera.position.set(0, 14, 14);
         break;
     }
     engine.camera.lookAt(0, 0, 0);

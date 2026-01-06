@@ -96,11 +96,19 @@ export function splitLayout(count: number): DominoPosition[] {
   return positions;
 }
 
+/**
+ * Empty layout - no dominoes, for custom placement
+ */
+export function emptyLayout(_count: number): DominoPosition[] {
+  return [];
+}
+
 // Layout registry
 export const layouts = {
   line: lineLayout,
   circle: circleLayout,
   split: splitLayout,
+  empty: emptyLayout,
 };
 
 export type LayoutType = keyof typeof layouts;
