@@ -44,7 +44,7 @@ export async function initBallPit() {
   // Ball storage for reset
   let balls: PhysicsBody[] = [];
 
-  const { values: controlValues } = createControls(
+  const { pane, values: controlValues } = createControls(
     {
       ballCount: 200,
       gravity: -9.81,
@@ -201,6 +201,13 @@ export async function initBallPit() {
   });
 
   console.log('🎱 Ball Pit initialized with controls!');
+
+  // Cleanup on dispose
+  const originalDispose = engine.dispose.bind(engine);
+  engine.dispose = () => {
+    pane.dispose();
+    originalDispose();
+  };
 
   return engine;
 }

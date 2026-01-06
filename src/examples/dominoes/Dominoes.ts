@@ -21,14 +21,27 @@ const DEFAULT_LAYOUT: LayoutType = 'line';
 const PLACEMENT_SPACING = 0.55;
 const TOUCH_HOLD_DURATION = 1000; // 1 second hold to enter placement mode
 const MIN_ZOOM = 8;
-const MAX_ZOOM = 50;
+const MAX_ZOOM = 70;
 
 export async function initDominoes() {
   const engine = new Engine();
   await engine.initPhysics({ x: 0, y: -9.81, z: 0 });
 
-  // Adjust camera
-  engine.camera.position.set(0, 12, 16);
+  // Adjust camera (start max zoomed out on mobile)
+  const isMobileDevice =
+    'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  if (isMobileDevice) {
+    // Start at MAX_ZOOM distance on mobile
+    const mobileDistance = MAX_ZOOM - 30;
+    const angle = Math.atan2(16, 12); // Preserve camera angle ratio
+    engine.camera.position.set(
+      0,
+      Math.sin(angle) * mobileDistance,
+      Math.cos(angle) * mobileDistance,
+    );
+  } else {
+    engine.camera.position.set(0, 12, 16);
+  }
   engine.camera.lookAt(0, 0, 0);
 
   // Stats (hidden on mobile)
@@ -66,8 +79,12 @@ export async function initDominoes() {
     <div class="hold-progress-text">Hold...</div>
   `;
   document.body.appendChild(holdProgress);
-  const progressFill = holdProgress.querySelector('.hold-progress-fill') as HTMLElement;
-  const progressText = holdProgress.querySelector('.hold-progress-text') as HTMLElement;
+  const progressFill = holdProgress.querySelector(
+    '.hold-progress-fill',
+  ) as HTMLElement;
+  const progressText = holdProgress.querySelector(
+    '.hold-progress-text',
+  ) as HTMLElement;
 
   // Helper: Show hold progress at position (with small delay to avoid flicker)
   const showHoldProgress = (x: number, y: number) => {
@@ -565,7 +582,7 @@ export async function initDominoes() {
   };
 
   // Controls (declare early so spawnDominoes can access values)
-  const { values: controlValues } = createDominoControls(
+  const { pane, values: controlValues } = createDominoControls(
     {
       dominoCount: DEFAULT_COUNT,
       layout: DEFAULT_LAYOUT,
@@ -686,6 +703,7 @@ export async function initDominoes() {
     hint.remove();
     placementHint.remove();
     holdProgress.remove();
+    pane.dispose();
     originalDispose();
   };
 
