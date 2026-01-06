@@ -18,6 +18,7 @@ import { createDominoControls } from '../../ui/DominoControls';
 
 const DEFAULT_COUNT = 30;
 const DEFAULT_LAYOUT: LayoutType = 'line';
+const PLACEMENT_SPACING = 0.55;
 
 export async function initDominoes() {
   const engine = new Engine();
@@ -39,8 +40,31 @@ export async function initDominoes() {
   // Domino storage
   let dominoes: PhysicsBody[] = [];
 
+  // Custom placement state
+  let isCtrlHeld = false;
+  let isPlacing = false;
+  let lastPlacementPosition: THREE.Vector3 | null = null;
+
+  // Create invisible ground plane for raycasting
+  const groundPlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(100, 100),
+    new THREE.MeshBasicMaterial({ visible: false }),
+  );
+  groundPlane.rotation.x = -Math.PI / 2;
+  groundPlane.position.y = 0;
+  engine.scene.add(groundPlane);
+
+  // Track if we just finished placing (to prevent click from toppling)
+  let justFinishedPlacing = false;
+
   // Click handler (checks current dominoes on each click)
   const handleClick = (event: MouseEvent) => {
+    // Skip if we just finished a placement drag
+    if (justFinishedPlacing) {
+      justFinishedPlacing = false;
+      return;
+    }
+
     const mouse = new THREE.Vector2(
       (event.clientX / window.innerWidth) * 2 - 1,
       -(event.clientY / window.innerHeight) * 2 + 1,
@@ -90,6 +114,115 @@ export async function initDominoes() {
   };
 
   engine.renderer.domElement.addEventListener('click', handleClick);
+
+  // Helper: Get ground hit position from mouse event
+  const getGroundHitPosition = (event: MouseEvent): THREE.Vector3 | null => {
+    const mouse = new THREE.Vector2(
+      (event.clientX / window.innerWidth) * 2 - 1,
+      -(event.clientY / window.innerHeight) * 2 + 1,
+    );
+
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(mouse, engine.camera);
+
+    const intersects = raycaster.intersectObject(groundPlane);
+    if (intersects.length > 0) {
+      return intersects[0].point;
+    }
+    return null;
+  };
+
+  // Helper: Place a domino at position facing toward previous position
+  const placeDominoAt = (position: THREE.Vector3, previousPosition: THREE.Vector3 | null) => {
+    const startColor = new THREE.Color(0xff6b6b);
+    const endColor = new THREE.Color(0x4ecdc4);
+    const color = getGradientColor(dominoes.length, dominoes.length + 20, startColor, endColor);
+
+    // Calculate rotation so domino's flat face is perpendicular to the path
+    // (so dominoes can knock each other over)
+    let rotation = 0;
+    if (previousPosition) {
+      rotation = Math.atan2(
+        position.x - previousPosition.x,
+        position.z - previousPosition.z,
+      ) + Math.PI / 2; // Add 90 degrees to orient flat face toward path
+    }
+
+    const domino = createDomino(engine.world, {
+      position: {
+        x: position.x,
+        y: DOMINO_SIZE.height / 2 + 0.01,
+        z: position.z,
+      },
+      rotation,
+      color,
+      index: dominoes.length,
+    });
+
+    engine.addPhysicsBody(domino);
+    dominoes.push(domino);
+  };
+
+  // Custom placement event handlers
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Control') {
+      isCtrlHeld = true;
+    }
+  };
+
+  const handleKeyUp = (event: KeyboardEvent) => {
+    if (event.key === 'Control') {
+      isCtrlHeld = false;
+      isPlacing = false;
+      lastPlacementPosition = null;
+    }
+  };
+
+  const handleMouseDown = (event: MouseEvent) => {
+    if (!isCtrlHeld || event.button !== 0) return;
+
+    event.preventDefault();
+    isPlacing = true;
+
+    const hitPosition = getGroundHitPosition(event);
+    if (hitPosition) {
+      placeDominoAt(hitPosition, lastPlacementPosition);
+      lastPlacementPosition = hitPosition.clone();
+    }
+  };
+
+  const handleMouseUp = (event: MouseEvent) => {
+    if (event.button === 0 && isPlacing) {
+      justFinishedPlacing = true;
+      isPlacing = false;
+      lastPlacementPosition = null;
+    }
+  };
+
+  const handleMouseMove = (event: MouseEvent) => {
+    if (!isCtrlHeld || !isPlacing) return;
+
+    const hitPosition = getGroundHitPosition(event);
+    if (!hitPosition) return;
+
+    if (lastPlacementPosition) {
+      const distance = hitPosition.distanceTo(lastPlacementPosition);
+      if (distance >= PLACEMENT_SPACING) {
+        placeDominoAt(hitPosition, lastPlacementPosition);
+        lastPlacementPosition = hitPosition.clone();
+      }
+    } else {
+      placeDominoAt(hitPosition, null);
+      lastPlacementPosition = hitPosition.clone();
+    }
+  };
+
+  // Add placement event listeners
+  window.addEventListener('keydown', handleKeyDown);
+  window.addEventListener('keyup', handleKeyUp);
+  engine.renderer.domElement.addEventListener('mousedown', handleMouseDown);
+  engine.renderer.domElement.addEventListener('mouseup', handleMouseUp);
+  engine.renderer.domElement.addEventListener('mousemove', handleMouseMove);
 
   // Spawn dominoes
   const spawnDominoes = (layout: LayoutType, count: number) => {
@@ -168,7 +301,7 @@ export async function initDominoes() {
   spawnDominoes(DEFAULT_LAYOUT, DEFAULT_COUNT);
   adjustCameraForLayout(DEFAULT_LAYOUT);
 
-  // Hint text
+  // Hint text (topple hint - fades out)
   const hint = document.createElement('div');
   hint.className = 'domino-hint';
   hint.innerHTML = '👆 Click any domino to topple it!';
@@ -195,6 +328,12 @@ export async function initDominoes() {
     setTimeout(() => hint.remove(), 500);
   }, 4000);
 
+  // Placement hint (persistent)
+  const placementHint = document.createElement('div');
+  placementHint.className = 'placement-hint';
+  placementHint.textContent = 'Hold CTRL + Click & Drag to place dominoes';
+  document.body.appendChild(placementHint);
+
   // Start engine
   engine.start(() => {
     stats.update();
@@ -204,7 +343,13 @@ export async function initDominoes() {
   const originalDispose = engine.dispose.bind(engine);
   engine.dispose = () => {
     engine.renderer.domElement.removeEventListener('click', handleClick);
+    engine.renderer.domElement.removeEventListener('mousedown', handleMouseDown);
+    engine.renderer.domElement.removeEventListener('mouseup', handleMouseUp);
+    engine.renderer.domElement.removeEventListener('mousemove', handleMouseMove);
+    window.removeEventListener('keydown', handleKeyDown);
+    window.removeEventListener('keyup', handleKeyUp);
     hint.remove();
+    placementHint.remove();
     originalDispose();
   };
 
